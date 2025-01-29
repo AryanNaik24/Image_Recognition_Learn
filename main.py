@@ -2,6 +2,23 @@ from functools import reduce
 from PIL import Image
 import numpy as np
 import matplotlib.pyplot as plt
+from collections import Counter
+
+def createExamples():
+    numberArrayExamples = open('numArEx.txt','a')
+    numbersWeHave = range(0,10)
+    versionsWeHave = range(1,10)
+
+
+    for eachNum in numbersWeHave:
+        for eachVer in versionsWeHave:
+            imgFilePath = 'imagestest/numbers/'+str(eachNum)+'.'+str(eachVer)+'.png'
+            ei= Image.open(imgFilePath)
+            exImgArr = np.asarray(ei).copy()
+            eiar1 = str(exImgArr.tolist())
+
+            lineToWrite = str(eachNum)+'::'+eiar1+'\n'
+            numberArrayExamples.write(lineToWrite)
 
 
 def threshold(imageArray):
@@ -33,35 +50,43 @@ def threshold(imageArray):
     return newArr
 
 
-# Open images and convert to NumPy arrays
-img = Image.open("imagestest/numbers/0.1.png").convert("RGBA")
-imgArr = np.asarray(img).copy()
+def findNum(filePath):
+    matchedAr = []
+    loadExmpl = open('numArEx.txt','r').read()
+    loadExmpl = loadExmpl.split('\n')
 
-img2 = Image.open("imagestest/dotndot.png").convert("RGBA")
-imgArr2 = np.asarray(img2).copy()
+    i = Image.open(filePath)
+    iar = np.array(i)
+    iarl = iar.tolist()
 
-img3 = Image.open("imagestest/numbers/y0.5.png").convert("RGBA")
-imgArr3 = np.asarray(img3).copy()
+    inQuestion = str(iarl)
 
-img4 = Image.open("imagestest/numbers/y0.4.png").convert("RGBA")
-imgArr4 = np.asarray(img4).copy()
+    for exmpl in loadExmpl:
+        if len(exmpl)>3:
+            splitEx = exmpl.split('::')
+            currentNum = splitEx[0]
+            currentAr = splitEx[1]
+
+            eachPixEx = currentAr.split('],')
+
+            eachPixInQ = inQuestion.split('],')
+
+            x=0
+
+            while x<len(eachPixEx):
+                if eachPixEx[x] == eachPixInQ[x]:
+                    matchedAr.append(int(currentNum))
+
+                x+=1
+    
+    print (matchedAr)
+
+    x= Counter(matchedAr)
+    print (x)
 
 
-imgArr = threshold(imgArr)
-imgArr2 = threshold(imgArr2)
-imgArr3 = threshold(imgArr3)
-imgArr4 = threshold(imgArr4)
+findNum('imagestest/test2.png')
 
 
-fig = plt.figure()
-ax1 = plt.subplot2grid((8, 6), (0, 0), rowspan=4, colspan=3)
-ax2 = plt.subplot2grid((8, 6), (4, 0), rowspan=4, colspan=3)
-ax3 = plt.subplot2grid((8, 6), (0, 3), rowspan=4, colspan=3)
-ax4 = plt.subplot2grid((8, 6), (4, 3), rowspan=4, colspan=3)
 
-ax1.imshow(imgArr)
-ax2.imshow(imgArr2)
-ax3.imshow(imgArr3)
-ax4.imshow(imgArr4)
 
-plt.show()
